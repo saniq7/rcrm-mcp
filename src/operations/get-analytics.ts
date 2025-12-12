@@ -31,15 +31,15 @@ export async function getAnalytics(
   const limit = 100; // Maximize batch size for speed
 
   while (true) {
-    const response = await client.getOrders({
-      filter: {
+    const response = await client.getOrders(
+      {
         createdAtFrom: `${dateFrom} 00:00:00`,
         createdAtTo: `${dateTo} 23:59:59`,
         ...filter,
       },
-      page,
       limit,
-    });
+      page
+    );
 
     if (!response.orders || response.orders.length === 0) break;
     
