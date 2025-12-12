@@ -123,7 +123,7 @@ export class RetailCRMClient {
   }
 
   /**
-   * Get reference data (dictionaries)
+   * Get reference data (dictionaries) with auto-pagination
    */
   async getReference(dictionary: string) {
     const endpoints: Record<string, string> = {
@@ -141,17 +141,62 @@ export class RetailCRMClient {
       throw new Error(`Unknown dictionary: ${dictionary}. Allowed: ${Object.keys(endpoints).join(', ')}`);
     }
 
-    const response = await this.request(endpoint);
-    
-    // Different endpoints return data in different keys
-    if (dictionary === 'custom-fields') {
-      return response.customFields || [];
+    let allItems: any[] = [];
+    let page = 1;
+    const limit = 100; // Max limit for references usually
+
+    while (true) {
+      const params = { limit, page };
+      const response = await this.request(endpoint, params);
+      
+      let items: any[] = [];
+      
+      // Extract items based on dictionary type
+      if (dictionary === 'custom-fields') {
+        items = response.customFields || [];
+      } else {
+        // Most reference endpoints return data in a key matching the dictionary name
+        // or sometimes just a map. We try to find the relevant data key.
+        const dataKey = Object.keys(response).find(k => k !== 'success' && k !== 'pagination');
+        const data = response[dataKey || ''] || response;
+        
+        // If it's an object (map), convert to array
+        if (typeof data === 'object' && !Array.isArray(data)) {
+            items = Object.values(data);
+        } else if (Array.isArray(data)) {
+            items = data;
+        }
+      }
+
+      if (items.length === 0) {
+        break;
+      }
+
+      allItems = allItems.concat(items);
+
+      // Check pagination
+      if (response.pagination && page < response.pagination.totalPageCount) {
+        page++;
+      } else {
+        break;
+      }
     }
-    
-    // Most reference endpoints return data in a key matching the dictionary name (e.g. "statuses")
-    // or sometimes just a map. We try to find the relevant data key.
-    const dataKey = Object.keys(response).find(k => k !== 'success' && k !== 'pagination');
-    return response[dataKey || ''] || response;
+
+    return allItems;
+  }
+
+  /**
+   * Helper method for legacy operations: Get order methods
+   */
+  async getOrderMethods() {
+    return this.getReference('order-methods');
+  }
+
+  /**
+   * Helper method for legacy operations: Get sites (channels)
+   */
+  async getChannels() {
+    return this.getReference('sites');
   }
 
   /**
@@ -164,7 +209,11 @@ export class RetailCRMClient {
     Object.entries(filter).forEach(([key, value]) => {
       if (value === undefined || value === null) return;
 
-      if (typeof value === 'object' && !Array.isArray(value)) {
+      if (Array.isArray(value)) {
+        value.forEach(item => {
+          params.append(`${prefix}[${key}][]`, String(item));
+        });
+      } else if (typeof value === 'object') {
         this.appendFilterParams(params, value, `${prefix}[${key}]`);
       } else {
         params.append(`${prefix}[${key}]`, String(value));

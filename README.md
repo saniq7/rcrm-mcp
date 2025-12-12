@@ -1,82 +1,99 @@
-# RetailCRM MCP Server v2.0
+# RetailCRM MCP Server 🚀
 
-A Model Context Protocol (MCP) server for RetailCRM (Simla), enabling AI agents to interact with your CRM data.
+**Подключите ваших AI-агентов к RetailCRM (Simla) с помощью Model Context Protocol.**
 
-## Features
+[![MCP Standard](https://img.shields.io/badge/MCP-Standard-blue)](https://modelcontextprotocol.io)
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Railway Deploy](https://img.shields.io/badge/Deploy-Railway-0B0D0E?logo=railway&logoColor=white)](https://railway.app/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-*   **Generic Tools**: Flexible access to orders and customers with full filtering support.
-*   **Metadata Discovery**: Inspect custom fields, statuses, and other dictionaries on the fly.
-*   **Legacy Support**: Specific analytics tools (`get_sales_by_source`, etc.) are preserved.
-*   **Docker Ready**: Easy deployment with Docker Compose.
+---
 
-## Tools
+## 📖 Описание
 
-### 1. `get_reference`
-Retrieves metadata and dictionaries. Essential for discovering codes for filters.
-*   **dictionary**: `custom-fields`, `statuses`, `order-types`, `sites`, `payment-types`, `delivery-types`, `order-methods`.
+Это готовый к использованию **MCP сервер** для RetailCRM (Simla). Он служит мостом между вашими AI-агентами (n8n, Manus, Claude Desktop, Cursor) и данными вашего интернет-магазина.
 
-### 2. `get_orders`
-Search and retrieve orders.
-*   **filter**: JSON object matching RetailCRM API filter (e.g., `{ "createdAtFrom": "2025-01-01", "customFields": { "shoe_size": "42" } }`).
-*   **limit**: Max records (default 20).
-*   **page**: Page number.
+В отличие от простых API-оберток, этот сервер предоставляет **интеллектуальные, универсальные инструменты**, которые позволяют LLM изучать схему вашей CRM, понимать пользовательские поля и строить сложные аналитические запросы на лету.
 
-### 3. `get_customers`
-Search and retrieve customers.
-*   **filter**: JSON object matching RetailCRM API filter.
-*   **limit**: Max records (default 20).
-*   **page**: Page number.
+### Почему это удобно?
+*   **Универсальный доступ:** Один инструмент (`get_orders`) покрывает 99% поисковых сценариев.
+*   **Самообучение:** Агенты могут изучать конфигурацию вашей CRM (статусы, пользовательские поля) с помощью `get_reference`.
+*   **Готовность к облаку:** Построен на Express.js и SSE (Server-Sent Events) для легкого развертывания на Railway, Render или любом VPS.
+*   **Безопасность:** API-ключи хранятся в переменных окружения и никогда не передаются в LLM.
 
-### 4. `query_retailcrm` (Legacy)
-*   **operation**: `get_sales_by_source`, `get_leads_count`, `get_registration_stats`.
+---
 
-## Quick Start
+## ✨ Возможности
 
-1.  Clone the repository.
-2.  Copy `.env.example` to `.env` and set your RetailCRM URL and API Key.
-3.  Run `docker-compose up -d`.
+*   **🔍 Универсальный поиск**: Фильтрация заказов и клиентов по *любому* полю, включая вложенные пользовательские поля.
+*   **🧠 Обнаружение метаданных**: Инструмент `get_reference` позволяет агентам "узнавать" вашу специфическую настройку CRM (например, что "Размер обуви" — это поле `custom_shoe_size_field`).
+*   **⚡ Аналитика в реальном времени**: Готовые операции для анализа продаж и подсчета лидов.
+*   **🔌 Нативная интеграция**: Полная совместимость с нодой **MCP Client** в n8n (SSE Transport).
+*   **📄 Авто-пагинация**: Автоматически обрабатывает большие объемы данных, перелистывая страницы API.
 
-## Integration
+---
 
-### n8n
-Use the "HTTP Request" node to call the MCP server or use the AI Agent node with custom tools definition.
+## 🛠️ Доступные инструменты
 
-### Manus / Claude Desktop
-Add to your configuration:
-```json
-{
-  "mcpServers": {
-    "retailcrm": {
-      "command": "docker",
-      "args": ["run", "-i", "--rm", "--env-file", ".env", "retailcrm-mcp"]
-    }
-  }
-}
+Сервер предоставляет вашему AI-агенту следующие инструменты:
+
+| Имя инструмента | Описание |
+| :--- | :--- |
+| `get_orders` | Поиск заказов с гибкой фильтрацией (по дате, статусу, менеджеру, кастомным полям и т.д.). |
+| `get_customers` | Поиск клиентов с гибкой фильтрацией (по VIP статусу, LTV, дате регистрации и т.д.). |
+| `get_reference` | Получение справочников (статусы, типы заказов, пользовательские поля) для понимания кодов CRM. |
+| `query_retailcrm` | Выполнение готовых аналитических запросов (например, "Продажи по источникам", "Статистика регистраций"). |
+
+---
+
+## 🚀 Быстрый старт (Railway)
+
+Самый простой способ запустить сервер — использовать [Railway](https://railway.app/).
+
+1.  **Сделайте Fork/Clone** этого репозитория на свой GitHub.
+2.  Создайте новый проект в Railway и выберите **"Deploy from GitHub"**.
+3.  Добавьте следующие **Переменные окружения (Environment Variables)**:
+    *   `RETAILCRM_URL`: URL вашей CRM (например, `https://demo.retailcrm.ru`)
+    *   `RETAILCRM_API_KEY`: Ваш API ключ
+    *   `PORT`: `3000` (Опционально, по умолчанию 3000)
+4.  Railway соберет и запустит сервер.
+5.  Скопируйте ваш публичный URL (например, `https://my-app.up.railway.app`).
+
+---
+
+## 🔌 Подключение к n8n
+
+Этот сервер поддерживает стандартный транспорт **SSE (Server-Sent Events)**.
+
+1.  Откройте ваш воркфлоу в n8n.
+2.  Добавьте ноду **MCP Client**.
+3.  Выберите **Connection Type**: `Server-Sent Events (SSE)`.
+4.  **Endpoint**: `https://<ваш-railway-url>/sse`
+    *   *Важно: Не забудьте добавить суффикс `/sse`!*
+5.  Нажмите **Execute**. Инструменты автоматически появятся в списке.
+
+---
+
+## 💻 Локальная разработка
+
+Вы также можете запустить сервер локально с помощью Docker.
+
+```bash
+# 1. Клонируйте репозиторий
+git clone https://github.com/your-username/retailcrm-mcp.git
+
+# 2. Создайте файл .env
+cp .env.example .env
+# (Отредактируйте .env, добавив ваши ключи)
+
+# 3. Запустите через Docker Compose
+docker-compose up -d
 ```
 
-## Examples
+Сервер будет доступен по адресу `http://localhost:3000/sse`.
 
-### Discover Custom Fields
-```json
-{
-  "name": "get_reference",
-  "arguments": {
-    "dictionary": "custom-fields"
-  }
-}
-```
+---
 
-### Search Orders by Custom Field
-```json
-{
-  "name": "get_orders",
-  "arguments": {
-    "filter": {
-      "customFields": {
-        "shoe_size": "42"
-      },
-      "status": "new"
-    }
-  }
-}
-```
+## 📄 Лицензия
+
+MIT License. Свободно используйте и модифицируйте для своих проектов.

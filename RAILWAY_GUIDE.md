@@ -8,7 +8,7 @@
 2.  Создайте новый репозиторий (кнопка **New** или **+**).
     *   Назовите его, например, `retailcrm-mcp`.
     *   Сделайте его **Private** (чтобы никто не видел ваш код).
-3.  Загрузите файлы из архива `retailcrm-mcp-server-cloud.tar.gz` в этот репозиторий.
+3.  Загрузите файлы из архива `retailcrm-mcp-server-sse.tar.gz` в этот репозиторий.
     *   Можно просто перетащить файлы через веб-интерфейс GitHub (кнопка **Add file** -> **Upload files**).
 
 ## Шаг 2: Запуск на Railway
@@ -42,35 +42,17 @@ Railway начнет сборку вашего проекта. Это займе
 
 ---
 
-## Как использовать в n8n
+## Как подключить к n8n (Native MCP)
 
-Теперь в вашем n8n (где бы он ни был) используйте **HTTP Request** ноду:
+Теперь, когда у вас есть ссылка, вы можете подключить сервер как **нативный MCP Client**:
 
-*   **Method:** `POST`
-*   **URL:** `https://ваша-ссылка-из-railway/mcp`
-*   **Body:** JSON
+1.  В n8n добавьте ноду **MCP Client** (или AI Agent с поддержкой MCP).
+2.  В настройках подключения выберите **Server-Sent Events (SSE)**.
+3.  В поле URL вставьте вашу ссылку с добавлением `/sse`:
+    *   `https://retailcrm-mcp-production.up.railway.app/sse`
 
-### Пример запроса (Body):
+n8n автоматически подключится, скачает список инструментов (`get_orders`, `get_reference` и т.д.) и вы сможете использовать их в своих агентах.
 
-```json
-{
-  "name": "get_orders",
-  "arguments": {
-    "filter": {
-      "status": "new"
-    },
-    "limit": 5
-  }
-}
-```
+## Как подключить к Manus / Claude Desktop
 
-### Пример запроса справочника (Body):
-
-```json
-{
-  "name": "get_reference",
-  "arguments": {
-    "dictionary": "statuses"
-  }
-}
-```
+Используйте тот же URL: `https://retailcrm-mcp-production.up.railway.app/sse`

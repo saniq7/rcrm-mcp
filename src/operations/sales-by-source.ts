@@ -47,10 +47,13 @@ export async function getSalesBySource(
   }
 
   // Получить заказы за период
-  const orders = await client.getOrders({
-    dateFrom: params.date_from,
-    dateTo: params.date_to,
-  });
+  // В v2.0 getOrders возвращает { orders: [], pagination: {} }
+  const response = await client.getOrders({
+    createdAtFrom: params.date_from,
+    createdAtTo: params.date_to,
+  }, 100);
+  
+  const orders = response.orders || [];
 
   // Агрегировать по источникам
   const sourceMap: Record<string, { count: number; sum: number }> = {};
@@ -68,7 +71,7 @@ export async function getSalesBySource(
 
   // Построить результат
   const sources = Object.entries(sourceMap).map(([sourceCode, data]) => {
-    const channelInfo = channels.find((c: any) => c.code === sourceCode);
+    const channelInfo = (channels as any[]).find((c: any) => c.code === sourceCode);
     const sourceName = channelInfo?.name || sourceCode;
 
     return {
@@ -86,7 +89,7 @@ export async function getSalesBySource(
   const result: SalesBySourceResult = {
     sources,
     total_registrations: orders.length,
-    total_sum: orders.reduce((sum, order) => sum + (order.sum || 0), 0),
+    total_sum: orders.reduce((sum: number, order: any) => sum + (order.sum || 0), 0),
     period: {
       from: params.date_from,
       to: params.date_to,

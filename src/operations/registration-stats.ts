@@ -58,10 +58,13 @@ export async function getRegistrationStats(
   }
 
   // Получить заказы за период
-  const orders = await client.getOrders({
-    dateFrom: params.date_from,
-    dateTo: params.date_to,
-  });
+  // В v2.0 getOrders возвращает { orders: [], pagination: {} }
+  const response = await client.getOrders({
+    createdAtFrom: params.date_from,
+    createdAtTo: params.date_to,
+  }, 100);
+  
+  const orders = response.orders || [];
 
   // Агрегировать по методам
   const methodMap: Record<string, { count: number; sum: number }> = {};
@@ -98,7 +101,7 @@ export async function getRegistrationStats(
 
   // Построить результат по методам
   const by_method = Object.entries(methodMap).map(([methodCode, data]) => {
-    const methodInfo = methods.find((m: any) => m.code === methodCode);
+    const methodInfo = (methods as any[]).find((m: any) => m.code === methodCode);
     const methodName = methodInfo?.name || methodCode;
 
     return {
@@ -124,7 +127,7 @@ export async function getRegistrationStats(
   // Построить результат по методам и месяцам
   const by_method_and_month = Object.entries(methodMonthMap).map(([key, data]) => {
     const [month, methodCode] = key.split('_');
-    const methodInfo = methods.find((m: any) => m.code === methodCode);
+    const methodInfo = (methods as any[]).find((m: any) => m.code === methodCode);
     const methodName = methodInfo?.name || methodCode;
 
     return {
@@ -147,7 +150,7 @@ export async function getRegistrationStats(
     by_month,
     by_method_and_month,
     total_registrations: orders.length,
-    total_sum: orders.reduce((sum, order) => sum + (order.sum || 0), 0),
+    total_sum: orders.reduce((sum: number, order: any) => sum + (order.sum || 0), 0),
     period: {
       from: params.date_from,
       to: params.date_to,

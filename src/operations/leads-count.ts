@@ -35,16 +35,19 @@ export async function getLeadsCount(
   }
 
   // Получить клиентов за период
-  const customers = await client.getCustomers({
-    dateFrom: params.date_from,
-    dateTo: params.date_to,
-  });
+  // В v2.0 getCustomers возвращает { customers: [], pagination: {} }
+  const response = await client.getCustomers({
+    createdAtFrom: params.date_from,
+    createdAtTo: params.date_to,
+  }, 100); // Берем первые 100 для примера, или нужно делать пагинацию
+
+  const customers = response.customers || [];
 
   // Агрегировать по дням
   const dayMap: Record<string, number> = {};
 
   for (const customer of customers) {
-    const date = customer.createdAt.split('T')[0]; // Получить дату без времени
+    const date = customer.createdAt.split(' ')[0]; // Получить дату без времени (RetailCRM format YYYY-MM-DD HH:MM:SS)
     
     if (!dayMap[date]) {
       dayMap[date] = 0;
