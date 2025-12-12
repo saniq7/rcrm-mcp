@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  retailcrm-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: retailcrm-mcp-server
+    environment:
+      # Замените на ваш URL RetailCRM инстанса
+      RETAILCRM_URL: ${RETAILCRM_URL:-https://demo.retailcrm.ru}
+      # Замените на ваш API ключ RetailCRM
+      RETAILCRM_API_KEY: ${RETAILCRM_API_KEY:-your-api-key-here}
+      NODE_ENV: production
+    ports:
+      # Порт для HTTP доступа (опционально)
+      - "3000:3000"
+    restart: unless-stopped
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
