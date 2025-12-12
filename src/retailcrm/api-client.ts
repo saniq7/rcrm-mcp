@@ -123,6 +123,23 @@ export class RetailCRMClient {
   }
 
   /**
+   * Get order history
+   */
+  async getOrderHistory(filter: any = {}, limit: number = 20, page: number = 1) {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    params.append('page', page.toString());
+    
+    this.appendFilterParams(params, filter);
+
+    const response = await this.request('/api/v5/orders/history', params);
+    return {
+      history: response.history || [],
+      pagination: response.pagination
+    };
+  }
+
+  /**
    * Get reference data (dictionaries) with auto-pagination
    */
   async getReference(dictionary: string) {

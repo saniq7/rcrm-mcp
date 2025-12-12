@@ -14,6 +14,7 @@ import { getLeadsCount } from './operations/leads-count.js';
 import { getRegistrationStats } from './operations/registration-stats.js';
 import { getOrders, getCustomers, getReference } from './operations/generic.js';
 import { getAnalyticsToolDefinition, getAnalytics } from './operations/get-analytics.js';
+import { getOrderHistoryToolDefinition, getOrderHistory } from './operations/get-order-history.js';
 
 dotenv.config();
 
@@ -152,7 +153,7 @@ const createServer = () => {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     // Dynamically add the analytics tool to the list
-    const allTools = [...tools, getAnalyticsToolDefinition];
+    const allTools = [...tools, getAnalyticsToolDefinition, getOrderHistoryToolDefinition];
     return { tools: allTools };
   });
 
@@ -168,6 +169,9 @@ const createServer = () => {
           break;
         case 'get_analytics':
           result = await getAnalytics(retailcrmClient, args as any);
+          break;
+        case 'get_order_history':
+          result = await getOrderHistory(retailcrmClient, args as any);
           break;
         case 'get_orders':
           const ordersResult = await getOrders(retailcrmClient, args);
