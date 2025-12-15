@@ -110,16 +110,16 @@ export class SyncService {
     const lastSync = metadata?.last_customer_sync_timestamp || '2020-01-01 00:00:00';
     console.log(`[Sync] Last customer sync: ${lastSync}`);
 
-    // Fetch customers from RetailCRM since last sync
+    // Fetch customers from RetailCRM
+    // Note: Customers API doesn't support createdAtFrom filter
+    // For incremental sync, we rely on updated customers or fetch all
     let page = 1;
     let totalSynced = 0;
     const limit = 100;
 
     while (true) {
       const response = await this.retailcrm.getCustomers(
-        {
-          createdAtFrom: lastSync,
-        },
+        {}, // No date filter for customers
         limit,
         page
       );
