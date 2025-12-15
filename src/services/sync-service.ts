@@ -182,8 +182,9 @@ export class SyncService {
   async syncAll(): Promise<{ orders: number; customers: number; totalDuration: number }> {
     const startTime = Date.now();
     
-    const ordersResult = await this.syncOrders();
+    // IMPORTANT: Sync customers first to satisfy foreign key constraint
     const customersResult = await this.syncCustomers();
+    const ordersResult = await this.syncOrders();
     
     const totalDuration = Date.now() - startTime;
     
